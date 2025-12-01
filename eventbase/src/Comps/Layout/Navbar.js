@@ -1,114 +1,119 @@
-import { BrowserRouter as Router,Routes,Route,Link} from "react-router-dom";
+import React from "react";
+import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function Navbar() {
+  const navBar = {
+    position: "sticky",
+    top: 0,
+    zIndex: 50,
+    backgroundColor: "#ffffff",
+    borderBottom: "1px solid #e5e7eb",
+    padding: "10px 40px",
+  };
+
+  const wrap = {
+    display: "flex",
+    alignItems: "center",
+    width: "100%",
+    maxWidth: "1200px",
+    margin: "0 auto",
+  };
+
+  const brand = {
+    color: "#2B7A78",
+    fontSize: "22px",
+    fontWeight: 700,
+    textDecoration: "none",
+  };
+
+  const centerNav = {
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    gap: "30px",
+  };
+
+  const navLink = {
+    color: "#222222",
+    fontWeight: 500,
+    textDecoration: "none",
+    fontSize: "15px",
+  };
+
+  const rightBox = {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+  };
+
+  const search = {
+    width: "220px",
+    borderRadius: "6px",
+    border: "1px solid #e5e7eb",
+    padding: "8px 12px",
+    fontSize: "14px",
+  };
+
+  const loginBtn = {
+    backgroundColor: "#1F7A6F", // darker teal
+    color: "#ffffff",
+    borderRadius: "6px",
+    padding: "8px 18px",
+    fontWeight: 600,
+    textDecoration: "none",
+    border: "none",
+  };
+
+  const registerBtn = {
+    backgroundColor: "#2B7A78",
+    color: "#ffffff",
+    borderRadius: "6px",
+    padding: "8px 18px",
+    fontWeight: 600,
+    textDecoration: "none",
+    border: "none",
+  };
+
   return (
-    <Router>
-      <nav
-        className="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm"
-        style={{
-          position: "sticky",
-          padding: "10px 40px",
-        }}
-      >
-        <div className="container-fluid">
-          <Link to="/" className="navbar-brand fw-bold"
-            style={{ color: "#2B7A78", fontSize: "22px" }}>
-            EventBase
+    <nav style={navBar}>
+      <div style={wrap}>
+        {/* Left: Brand */}
+        <Link to="/" style={brand}>
+          EventBase
+        </Link>
+
+        {/* Center: Nav tabs */}
+        <div style={centerNav}>
+          <Link to="/" style={navLink}>
+            Home
           </Link>
-
-          <div className="collapse navbar-collapse justify-content-center" id="navbarNav">
-            <ul className="navbar-nav" style={{ gap: "30px" }}>
-              <li className="nav-item">
-                <Link to="/" className="nav-link fw-medium" style={({ isActive }) =>
-                    isActive ? { color: "#2B7A78", fontWeight: 600 }: { color: "#333", fontWeight: 500 }}>
-                  Home
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/events" className="nav-link fw-medium" style={({ isActive }) =>
-                    isActive ? { color: "#2B7A78", fontWeight: 600 } : { color: "#333", fontWeight: 500 }}>
-                  Events
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link
-                  to="/about"
-                  className="nav-link fw-medium"
-                  style={({ isActive }) =>
-                    isActive
-                      ? { color: "#2ca39c", fontWeight: 600 }
-                      : { color: "#333", fontWeight: 500 }
-                  }
-                >
-                  About
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link
-                  to="/contact"
-                  className="nav-link fw-medium"
-                  style={({ isActive }) =>
-                    isActive
-                      ? { color: "#2ca39c", fontWeight: 600 }
-                      : { color: "#333", fontWeight: 500 }
-                  }
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div className="d-flex align-items-center" style={{ gap: "10px" }}>
-            <input
-              type="text"
-              placeholder="Search Events..."
-              className="form-control"
-              style={{
-                width: "220px",
-                borderRadius: "6px",
-                border: "1px solid #e5e7eb",
-              }}
-            />
-            <Link
-              to="/login"
-              className="btn"
-              style={{
-                backgroundColor: "#1f7b75",
-                color: "#fff",
-                borderRadius: "8px",
-                fontWeight: "600",
-                padding: "8px 16px",
-              }}
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="btn"
-              style={{
-                backgroundColor: "#2ca39c",
-                color: "#fff",
-                borderRadius: "8px",
-                fontWeight: "600",
-                padding: "8px 16px",
-              }}
-            >
-              Register
-            </Link>
-          </div>
+          <Link to="/events" style={navLink}>
+            Events
+          </Link>
+          <Link to="/about" style={navLink}>
+            About
+          </Link>
+          <Link to="/contact" style={navLink}>
+            Contact
+          </Link>
         </div>
-      </nav>
 
-      <Routes>
-        <Route path="/" element={<div></div>} />
-        <Route path="/events" element={<div></div>} />
-        <Route path="/about" element={<div></div>} />
-        <Route path="/contact" element={<div></div>} />
-        <Route path="/login" element={<div></div>} />
-        <Route path="/register" element={<div></div>} />
-      </Routes>
-    </Router>
+        {/* Right: Search + buttons */}
+        <div style={rightBox}>
+          <input
+            type="text"
+            placeholder="Search Events..."
+            style={search}
+          />
+          <Link to="/login" style={loginBtn}>
+            Login
+          </Link>
+          <Link to="/register" style={registerBtn}>
+            Register
+          </Link>
+        </div>
+      </div>
+    </nav>
   );
 }
