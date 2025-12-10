@@ -1,6 +1,5 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-
 export default function EvDetailsAttendee() {
   // You can later replace this with props, global state, or API data
 
@@ -74,7 +73,8 @@ export default function EvDetailsAttendee() {
     border: "none",
     fontWeight: 600,
   };
-
+  
+  
   return (
     <>
       <div style={hero}></div>

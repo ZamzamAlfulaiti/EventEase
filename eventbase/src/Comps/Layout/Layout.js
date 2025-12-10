@@ -5,12 +5,7 @@ export default function Layout({ children }) {
   return (
     <>
       <Navbar />
-      <div
-        style={{
-          minHeight: "100vh",
-          backgroundColor: "#ffffff",
-        }}
-      >
+      <div style={{ minHeight: "100vh", backgroundColor: "#ffffff" }}>
         {children}
       </div>
     </>

@@ -1,23 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
-const DUMMY_EVENTS = [
-  { id: 1, title: "Event Title", date: "2025-12-01", location: "UTAS Auditorium", category: "Workshop" },
-  { id: 2, title: "Event Title", date: "2025-12-01", location: "UTAS Auditorium", category: "Workshop" },
-  { id: 3, title: "Event Title", date: "2025-12-01", location: "UTAS Auditorium", category: "Workshop" },
-  { id: 4, title: "Event Title", date: "2025-12-01", location: "UTAS Auditorium", category: "Workshop" },
-  { id: 5, title: "Event Title", date: "2025-12-01", location: "UTAS Auditorium", category: "Workshop" },
-  { id: 6, title: "Event Title", date: "2025-12-01", location: "UTAS Auditorium", category: "Workshop" },
-];
 
 export default function EventsList() {
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
 
-  // REQUIRED: Results state
-  const [results, setResults] = useState(DUMMY_EVENTS);
+  const [results, setResults] = useState([]);
+  const [eventData, setEventData] = useState([]);
 
   const filterBar = {
     backgroundColor: "#2CA39C",
@@ -112,9 +107,23 @@ export default function EventsList() {
     display: "inline-block",
   };
 
+  const showEventsData = async () => {
+    try {
+      let url = "http://localhost:5000/showEvents";
+      const response = await axios.get(url);
+      setEventData(response.data);
+      setResults(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    showEventsData();
+  }, []);
+
   // Filter logic
   const handleSearch = () => {
-    let filtered = [...DUMMY_EVENTS];
+    let filtered = [...eventData];
 
     if (search.trim()) {
       filtered = filtered.filter((e) =>
@@ -135,7 +144,7 @@ export default function EventsList() {
     setSearch("");
     setCategory("");
     setDate("");
-    setResults(DUMMY_EVENTS);
+    setResults(eventData);
   };
 
   return (
@@ -187,8 +196,9 @@ export default function EventsList() {
           </h2>
 
           <div className="row g-4">
-            {results.map((event) => (
-              <div className="col-md-3" key={event.id}>
+            {results.length ? (
+              results.map((event) =>(
+              <div className="col-md-3" key={event._id}>
                 <div style={card}>
                   <div style={imgPlaceholder}></div>
 
@@ -202,15 +212,16 @@ export default function EventsList() {
                     <p><strong>Category:</strong> {event.category}</p>
 
                     {/* Working Link */}
-                    <Link to={`/event/${event.id}`} style={viewBtn}>
+                    <Link to={`/event/${event._id}`} style={viewBtn}>
                       VIEW DETAILS
                     </Link>
                   </div>
                 </div>
               </div>
-            ))}
+            )) ): (
+              <p>No events found.</p>
+            )}
           </div>
-
         </div>
       </div>
     </>

@@ -56,7 +56,7 @@ export default function Navbar() {
   };
 
   const loginBtn = {
-    backgroundColor: "#1F7A6F", // darker teal
+    backgroundColor: "#1F7A6F",
     color: "#ffffff",
     borderRadius: "6px",
     padding: "8px 18px",
@@ -78,40 +78,21 @@ export default function Navbar() {
   return (
     <nav style={navBar}>
       <div style={wrap}>
-        {/* Left: Brand */}
         <Link to="/" style={brand}>
           EventBase
         </Link>
 
-        {/* Center: Nav tabs */}
         <div style={centerNav}>
-          <Link to="/" style={navLink}>
-            Home
-          </Link>
-          <Link to="/events" style={navLink}>
-            Events
-          </Link>
-          <Link to="/about" style={navLink}>
-            About
-          </Link>
-          <Link to="/contact" style={navLink}>
-            Contact
-          </Link>
+          <Link to="/" style={navLink}>Home</Link>
+          <Link to="/events" style={navLink}>Events</Link>
+          <Link to="/about" style={navLink}>About</Link>
+          <Link to="/contact" style={navLink}>Contact</Link>
         </div>
 
-        {/* Right: Search + buttons */}
         <div style={rightBox}>
-          <input
-            type="text"
-            placeholder="Search Events..."
-            style={search}
-          />
-          <Link to="/login" style={loginBtn}>
-            Login
-          </Link>
-          <Link to="/register" style={registerBtn}>
-            Register
-          </Link>
+          <input type="text" placeholder="Search Events..." style={search} />
+          <Link to="/login" style={loginBtn}>Login</Link>
+          <Link to="/register" style={registerBtn}>Register</Link>
         </div>
       </div>
     </nav>

@@ -1,6 +1,8 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
 export default function Home() {
   // HERO STYLES
   const hero = {
@@ -101,7 +103,19 @@ export default function Home() {
     borderRadius: "4px",
     fontSize: "14px",
   };
-
+  let [events, setEvents] = useState([]);
+  const fetchEvents = async () => {
+    try {
+      let url = "http://localhost:5000/showEvents";
+      let res = await axios.get(url);
+      setEvents(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchEvents();
+  }, []);
   return (
     <div style={page}>
       {/* HERO */}
@@ -115,8 +129,12 @@ export default function Home() {
           <p style={heroSub}>Join the community of students and organizers</p>
 
           <div style={heroButtons}>
-            <button style={heroBtnPrimary}>Explore Events</button>
-            <button style={heroBtnSecondary}>Create Event</button>
+            <Link to="/events">
+              <button style={heroBtnPrimary}>Explore Events</button>
+            </Link>
+            <Link to="/create-event">
+              <button style={heroBtnSecondary}>Create Event</button>
+            </Link>
           </div>
         </div>
       </section>
@@ -126,22 +144,24 @@ export default function Home() {
         <h2 style={featuredTitle}>Featured Events</h2>
 
         <div className="row g-4">
-          {[1, 2, 3].map((i) => (
-            <div className="col-md-4" key={i}>
+          {events.map((event) => (
+            <div className="col-md-4" key={event._id}>
               <div style={card}>
                 <div style={imgPlaceholder}></div>
                 <div style={cardBody}>
-                  <h5 style={cardTitle}>Event Title</h5>
+                  <h5 style={cardTitle}>{event.title}</h5>
                   <p style={cardText}>
-                    <strong>Date:</strong> 01-Dec-2025
+                    <strong>Date:</strong> {event.date}
                   </p>
                   <p style={cardText}>
-                    <strong>Location:</strong> UTAS Auditorium
+                    <strong>Location:</strong> {event.location}
                   </p>
                   <p style={cardText}>
-                    <strong>Category:</strong> Workshop
+                    <strong>Category:</strong> {event.category}
                   </p>
-                  <button style={viewBtn}>VIEW DETAILS</button>
+                  <Link to={`/event/${event._id}`} style={viewBtn}>
+                    VIEW DETAILS
+                  </Link>
                 </div>
               </div>
             </div>

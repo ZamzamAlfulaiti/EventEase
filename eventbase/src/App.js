@@ -1,7 +1,7 @@
 // src/App.js
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
+import { BrowserRouter as Router, Routes, Route, Link} from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
 import Layout from "./Comps/Layout/Layout";
 import Home from "./Comps/Home";
 import EventsList from "./Comps/EventsList";
@@ -18,6 +18,7 @@ import EditEvent from "./Comps/EditEvent";
 
 export default function App() {
   return (
+    <>
     <Router>
       <Routes>
         <Route
@@ -118,5 +119,6 @@ export default function App() {
         />
       </Routes>
     </Router>
+    </>
   );
 }

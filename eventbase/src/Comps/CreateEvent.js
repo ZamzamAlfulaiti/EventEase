@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
 
 export default function CreateEvent() {
   const [form, setForm] = useState({
@@ -14,17 +15,11 @@ export default function CreateEvent() {
     visibility: "",
     photo: null,
   });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const page = {
-    backgroundColor: "#ffffff",
-    padding: "40px 40px 80px",
-  };
-
-  const cardWrap = {
-    maxWidth: "900px",
-    margin: "0 auto",
-  };
-
+  const page = { backgroundColor: "#ffffff", padding: "40px 40px 80px" };
+  const cardWrap = { maxWidth: "900px", margin: "0 auto" };
   const card = {
     backgroundColor: "#ffffff",
     borderRadius: "10px",
@@ -33,20 +28,13 @@ export default function CreateEvent() {
     padding: "32px 40px 36px",
     textAlign: "center",
   };
-
-  const title = {
-    fontSize: "24px",
-    fontWeight: 700,
-    marginBottom: "24px",
-  };
-
+  const title = { fontSize: "24px", fontWeight: 700, marginBottom: "24px" };
   const textInput = {
     height: "40px",
     borderRadius: "6px",
     border: "1px solid #e5e7eb",
     fontSize: "14px",
   };
-
   const textarea = {
     borderRadius: "6px",
     border: "1px solid #e5e7eb",
@@ -54,12 +42,7 @@ export default function CreateEvent() {
     minHeight: "140px",
     resize: "vertical",
   };
-
-  const selectStyle = {
-    ...textInput,
-    paddingRight: "30px",
-  };
-
+  const selectStyle = { ...textInput, paddingRight: "30px" };
   const radioRow = {
     display: "flex",
     alignItems: "center",
@@ -67,7 +50,6 @@ export default function CreateEvent() {
     fontSize: "14px",
     marginTop: "4px",
   };
-
   const createBtn = {
     backgroundColor: "#2B7A78",
     color: "#ffffff",
@@ -88,10 +70,51 @@ export default function CreateEvent() {
     }
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    console.log("Create Event:", form);
-    alert("Event created (demo).");
+    setLoading(true);
+    setMessage("");
+    try {
+      const url = "http://localhost:5000/createEvent";
+
+      const formData = new FormData();
+      formData.append("title", form.name);
+      formData.append("description", form.description);
+      formData.append("category", form.category);
+      formData.append("date", form.date);
+      formData.append("startTime", form.startTime);
+      formData.append("endTime", form.endTime);
+      formData.append("location", form.location);
+      formData.append("maxParticipants", form.maxParticipants);
+      formData.append("visibility", form.visibility);
+      if (form.photo) {
+        formData.append("photo", form.photo);
+      }
+
+      // DO NOT set Content-Type manually — axios/browser will set boundary correctly
+      const response = await axios.post(url, formData);
+
+      setMessage("Event created successfully!");
+      console.log(response.data);
+
+      setForm({
+        name: "",
+        description: "",
+        category: "",
+        date: "",
+        startTime: "",
+        endTime: "",
+        location: "",
+        maxParticipants: "",
+        visibility: "",
+        photo: null,
+      });
+    } catch (error) {
+      console.error(error?.response || error);
+      setMessage("Error creating event. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -99,9 +122,8 @@ export default function CreateEvent() {
       <div style={cardWrap}>
         <div style={card}>
           <h1 style={title}>Create Event</h1>
-
-          <form onSubmit={onSubmit}>
-            {/* EVENT NAME */}
+          {message && <p>{message}</p>}
+          <form onSubmit={onSubmit} encType="multipart/form-data">
             <div className="mb-3 text-start">
               <input
                 type="text"
@@ -115,7 +137,6 @@ export default function CreateEvent() {
               />
             </div>
 
-            {/* DESCRIPTION */}
             <div className="mb-4 text-start">
               <textarea
                 name="description"
@@ -128,9 +149,7 @@ export default function CreateEvent() {
               />
             </div>
 
-            {/* ROW: CATEGORY – DATE – START/END TIME */}
             <div className="row g-3 mb-3 text-start">
-              {/* Category */}
               <div className="col-md-3">
                 <select
                   name="category"
@@ -147,7 +166,6 @@ export default function CreateEvent() {
                 </select>
               </div>
 
-              {/* Date */}
               <div className="col-md-3">
                 <input
                   type="date"
@@ -160,7 +178,6 @@ export default function CreateEvent() {
                 />
               </div>
 
-              {/* Start Time */}
               <div className="col-md-3">
                 <input
                   type="time"
@@ -173,7 +190,6 @@ export default function CreateEvent() {
                 />
               </div>
 
-              {/* End Time */}
               <div className="col-md-3">
                 <input
                   type="time"
@@ -187,9 +203,7 @@ export default function CreateEvent() {
               </div>
             </div>
 
-            {/* ROW: LOCATION – MAX PARTICIPANTS – VISIBILITY */}
             <div className="row g-3 mb-3 text-start">
-              {/* Location */}
               <div className="col-md-4">
                 <input
                   type="text"
@@ -203,7 +217,6 @@ export default function CreateEvent() {
                 />
               </div>
 
-              {/* Max Participants */}
               <div className="col-md-4">
                 <input
                   type="number"
@@ -218,7 +231,6 @@ export default function CreateEvent() {
                 />
               </div>
 
-              {/* Visibility */}
               <div className="col-md-4">
                 <div style={radioRow}>
                   <label>
@@ -245,7 +257,6 @@ export default function CreateEvent() {
               </div>
             </div>
 
-            {/* ROW: PHOTO UPLOAD + CREATE BUTTON */}
             <div className="row g-3 align-items-center text-start">
               <div className="col-md-4">
                 <input
@@ -261,8 +272,8 @@ export default function CreateEvent() {
               <div className="col-md-4"></div>
 
               <div className="col-md-4 d-flex justify-content-end">
-                <button type="submit" style={createBtn}>
-                  Create Event
+                <button type="submit" style={createBtn} disabled={loading}>
+                  {loading ? "Creating..." : "Create Event"}
                 </button>
               </div>
             </div>
