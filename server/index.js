@@ -1,139 +1,101 @@
-// server.js
 import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
-import multer from 'multer';
-import path from 'path';
-import './dbconnection.js';
 import Events from './models/Events.js';
+import User from './models/Users.js';
 
-const myserver = new express();
-
-// Middleware - ORDER MATTERS
+const PORT = 8000;
+const myserver = express();
 myserver.use(cors());
 myserver.use(express.json());
-myserver.use(express.urlencoded({ extended: true })); // For form data
-myserver.use('/uploads', express.static('uploads')); // Serve uploaded files
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = Date.now() + '-' + file.originalname;
-        cb(null, uniqueName);
-    }
+myserver.listen(PORT, () => console.log(`EventBase Server is running on port`,PORT));
+// Sample route
+myserver.get('/', (req, res) => {
+    res.send('Welcome to EventBase API');
 });
 
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only image files are allowed'));
-        }
-    }
+//display all events
+myserver.get("/showEvents", async(req, res) => {
+    try{
+    const events = await Events.find();
+    res.send(events);
+    }catch(err){console.log(err);}
 });
 
-const PORT = 5000;
-// --- START SERVER ---
-myserver.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}...`);
+//add new event
+myserver.post("/addEvent", async(req, res) => {
+    try{
+    const newEvent = req.body;
+    const result = await Events.create(newEvent);
+    if(result)
+        res.send({message: "Event added successfully"});
+    else
+        res.send({message: "Failed to add event"});
+    }catch(err){console.log(err);}
 });
 
-// Get all events
-myserver.get('/showEvents', async (req, res) => {
-    try {
-        const eventsData = await Events.find();
-        res.send(eventsData);
-    } catch (err) {
-        console.log(err);
-        res.send({ message: 'Error fetching events'});
-    }
+//delete event
+myserver.delete("/deleteEvent/:id", async(req, res) => {
+    try{
+    const eventId = req.params.id;
+    let result = await Events.findByIdAndDelete(eventId);
+    if(result)
+        res.send({message: "Event deleted successfully"});
+    else
+        res.send({message: "Event not found"});
+    }catch(err){console.log(err);}
 });
 
-// Create a new event (with file upload)
-myserver.post("/createEvent", upload.single('photo'), async (req, res) => {
-    try {
-        // Build image URL - files are served from /uploads route
-        const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
-        
-        const newEvent = new Events({
-            organizerId: req.body.organizerId || null,
-            title: req.body.title,
-            description: req.body.description,
-            category: req.body.category,
-            date: req.body.date,
-            startTime: req.body.startTime,
-            endTime: req.body.endTime,
-            location: req.body.location,
-            maxParticipants: req.body.maxParticipants,
-            visibility: req.body.visibility,
-            imageUrl: imageUrl,
-        });
+//update event
+myserver.put("/updateEvent/:id", async(req, res) => {
+    try{
+    const eventId = req.params.id;
+    let updateData = req.body;
+    let result = await Events.findByIdAndUpdate(
+        {id: eventId},
+        updateData,
+        {new: true}
+    );
 
-        await newEvent.save();
-        res.status(201).send({ message: "Event created successfully", event: newEvent });
-
-    } catch (err) {
-        console.log(err);
-        res.status(400).send({ message: "Failed to create event", error: err.message });
-    }
+    if(result)
+        res.send({message: "Event updated successfully"});
+    else
+        res.send({message: "Event not found"});
+    }catch(err){console.log(err);}
 });
 
-// Get an event by title
-myserver.get('/getEvent/:title', async (req, res) => {
-    try {
-        const { title } = req.params;
-        const event = await Events.findOne({ title });
-
-        if (!event) return res.status(404).json({ message: 'Event not found' });
-
-        res.status(200).send(event);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({ message: 'Error fetching event', error: err.message });
-    }
+//get event by id
+myserver.get("/getEvent/:id", async(req, res) => {
+    try{
+    const eventId = req.params.id;
+    let event = await Events.findById(eventId);
+    if((event.data).id)
+        res.send(event);
+    else
+        res.send({message: "Event not found"});
+    }catch(err){console.log(err);}
 });
 
-// Update an event by title
-myserver.put('/updateEvent/:title', async (req, res) => {
-    try {
-        const { title } = req.params;
-
-        const updatedEvent = await Events.findOneAndUpdate(
-            { title },
-            { $set: req.body },
-            { new: true }
-        );
-
-        if (!updatedEvent) return res.status(404).send({ message: 'Event not found' });
-
-        res.status(200).send({ message: 'Event updated successfully', updatedEvent });
-    } catch (err) {
-        console.log(err);
-        res.status(400).send({ message: 'Failed to update event', error: err.message });
-    }
+//register new user
+myserver.post("/register", async(req, res) => {
+    try{
+    const newUser = req.body;
+    const result = await User.create(newUser);
+    if(result)
+        res.send({message: "User registered successfully"});
+    else
+        res.send({message: "Failed to register user"});
+    }catch(err){console.log(err);}
 });
 
-// Delete an event by title
-myserver.delete('/deleteEvent/:title', async (req, res) => {
-    try {
-        const { title } = req.params;
-
-        const deletedEvent = await Events.findOneAndDelete({ title });
-
-        if (!deletedEvent) return res.status(404).json({ message: 'Event not found' });
-
-        res.status(200).send({ message: 'Event deleted successfully', deletedEvent });
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({ message: 'Error deleting event', error: err.message });
-    }
+//user login
+myserver.post("/login", async(req, res) => {
+    try{
+    const {email, password} = req.body;
+    const user = await User.findOne({email: email, password: password});
+    if(user)
+        res.send({message: "Login successful", user: user});
+    else
+        res.send({message: "Invalid email or password"});
+    }catch(err){console.log(err);}
 });
-
-export default myserver;

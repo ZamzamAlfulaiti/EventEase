@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 
-export default function EventsList() {
+export default function EventsList({ setSelectedEvent }) {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -14,6 +14,7 @@ export default function EventsList() {
   const [results, setResults] = useState([]);
   const [eventData, setEventData] = useState([]);
 
+  //styles
   const filterBar = {
     backgroundColor: "#2CA39C",
     padding: "12px 40px",
@@ -109,7 +110,7 @@ export default function EventsList() {
 
   const showEventsData = async () => {
     try {
-      let url = "http://localhost:5000/showEvents";
+      let url = "http://localhost:8000/showEvents";
       const response = await axios.get(url);
       setEventData(response.data);
       setResults(response.data);
@@ -197,28 +198,25 @@ export default function EventsList() {
 
           <div className="row g-4">
             {results.length ? (
-              results.map((event) =>(
-              <div className="col-md-3" key={event._id}>
-                <div style={card}>
-                  <div style={imgPlaceholder}></div>
+              results.map((event) => (
+                <div className="col-md-3" key={event._id}>
+                  <div style={card}>
+                    <div style={imgPlaceholder}>
+                      <img src={event.imageUrl} style={{ height: "120px", width: "260px" }} /></div>
 
-                  <div style={{ padding: "18px 20px 20px" }}>
-                    <h5 style={{ fontSize: "16px", fontWeight: 600 }}>
-                      {event.title}
-                    </h5>
+                    <div style={{ padding: "18px 20px 20px" }}>
+                      <h5 style={{ fontSize: "16px", fontWeight: 600 }}>
+                        {event.title}
+                      </h5>
 
-                    <p><strong>Date:</strong> {event.date}</p>
-                    <p><strong>Location:</strong> {event.location}</p>
-                    <p><strong>Category:</strong> {event.category}</p>
+                      <p><strong>Date:</strong> {event.date}</p>
+                      <p><strong>Location:</strong> {event.location}</p>
+                      <p><strong>Category:</strong> {event.category}</p>
 
-                    {/* Working Link */}
-                    <Link to={`/event/${event._id}`} style={viewBtn}>
-                      VIEW DETAILS
-                    </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )) ): (
+              ))) : (
               <p>No events found.</p>
             )}
           </div>

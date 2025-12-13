@@ -85,8 +85,8 @@ export default function Navbar() {
         <div style={centerNav}>
           <Link to="/" style={navLink}>Home</Link>
           <Link to="/events" style={navLink}>Events</Link>
-          <Link to="/about" style={navLink}>About</Link>
-          <Link to="/contact" style={navLink}>Contact</Link>
+          <Link to="/create-event" style={navLink}>Create Event</Link>
+          <Link to="/edit-event/:id" style={navLink}>Edit Event</Link>
         </div>
 
         <div style={rightBox}>

@@ -1,261 +1,327 @@
-// src/Comps/EditEvent.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
 
 export default function EditEvent() {
-  const [form, setForm] = useState({
-    title: "Event Title",
-    description: "A Workshop about … presented by …",
-    category: "Workshop",
-    date: "2025-12-01",
-    startTime: "09:00",
-    endTime: "12:00",
-    location: "UTAS Auditorium",
-    maxParticipants: "30",
-    visibility: "public",
-    photo: null,
-  });
+  let [eventId, setEventId] = useState();
+  let [message, setMessage] = useState("");
+  let [title, setTitle] = useState("");
+  let [description, setDescription] = useState("");
+  let [category, setCategory] = useState("");
+  let [date, setDate] = useState("");
+  let [startTime, setStartTime] = useState("");
+  let [endTime, setEndTime] = useState("");
+  let [location, setLocation] = useState("");
+  let [maxParticipants, setMaxParticipants] = useState(0);
+  let [visibility, setVisibility] = useState("public");
+  let [imageUrl, setImageUrl] = useState("");
+  let [events, setEvents] = useState([]);
+  let [selectedEvent, setSelectedEvent] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  const page = { backgroundColor: "#ffffff", padding: "40px 40px 80px" };
+  const cardWrap = { maxWidth: "900px", margin: "0 auto" };
   const card = {
-    background: "#fff",
+    backgroundColor: "#ffffff",
     borderRadius: "10px",
-    border: "1px solid #e5e7eb",
-    padding: "40px 50px",
     boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
-    maxWidth: "900px",
-    margin: "40px auto",
-    minHeight: "650px",
+    border: "1px solid #e5e7eb",
+    padding: "32px 40px 36px",
+    textAlign: "center",
   };
-
+  const titlesty = { fontSize: "24px", fontWeight: 700, marginBottom: "24px" };
   const textInput = {
-    height: "42px",
-    fontSize: "14px",
+    height: "40px",
     borderRadius: "6px",
     border: "1px solid #e5e7eb",
+    fontSize: "14px",
   };
-
   const textarea = {
-    minHeight: "150px",
     borderRadius: "6px",
     border: "1px solid #e5e7eb",
-    resize: "vertical",
     fontSize: "14px",
+    minHeight: "140px",
+    resize: "vertical",
   };
-
-  const selectInput = {
-    ...textInput,
-    paddingRight: "28px",
+  const selectStyle = { ...textInput, paddingRight: "30px" };
+  const radioRow = {
+    display: "flex",
+    alignItems: "center",
+    gap: "18px",
+    fontSize: "14px",
+    marginTop: "4px",
   };
-
-  const btnPrimary = {
+  const createBtn = {
     backgroundColor: "#2B7A78",
-    color: "#fff",
+    color: "#ffffff",
     border: "none",
     borderRadius: "6px",
-    padding: "8px 22px",
+    padding: "8px 24px",
     fontWeight: 600,
+    fontSize: "14px",
+    marginTop: "12px",
   };
-
-  const btnCancel = {
-    backgroundColor: "#4b5563",
-    color: "#fff",
+  const delBtn = {
+    backgroundColor: "#c93030",
+    color: "#ffffff",
     border: "none",
     borderRadius: "6px",
-    padding: "8px 22px",
-    fontWeight: 500,
+    padding: "8px 24px",
+    fontWeight: 600,
+    fontSize: "14px",
+    marginTop: "12px",
   };
 
-  function onChange(e) {
-    const { name, value, files, type } = e.target;
-    if (type === "file") {
-      setForm({ ...form, photo: files[0] });
-    } else {
-      setForm({ ...form, [name]: value });
+  const deleteEvent = async (e) => {
+  try {
+    await axios.delete("http://localhost:8000/deleteEvent/" + eventId);
+    setMessage("Event deleted successfully");
+    fetchEvents();
+    setEventId(null);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+  const fetchEvents = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/showEvents");
+      setEvents(res.data);
+    } catch (err) {
+      console.log(err);
     }
-  }
+  };
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
-  function onSubmit(e) {
-    e.preventDefault();
-    alert("Event updated (demo).");
-  }
+  const loadEventDetails = async (id) => {
+    try {
+      const res = await axios.get("http://localhost:8000/getEvent/" + id);
+      const ev = res.data;
 
-  function goBack() {
-    window.history.back();
-  }
+      setEventId(ev.eventId);
+      setTitle(ev.title);
+      setDescription(ev.description);
+      setCategory(ev.category);
+      setDate(ev.date);
+      setStartTime(ev.startTime);
+      setEndTime(ev.endTime);
+      setLocation(ev.location);
+      setMaxParticipants(ev.maxParticipants);
+      setVisibility(ev.visibility);
+      setImageUrl(ev.imageUrl || "");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const onSubmit = async (e) => {
+    try {
+      let url = "http://localhost:8000/updateEvent/" + eventId;
+      let updateData = {
+        title: title,
+        description: description,
+        category: category,
+        date: date,
+        startTime: startTime,
+        endTime: endTime,
+        location: location,
+        maxParticipants: maxParticipants,
+        visibility: visibility,
+        imageUrl: imageUrl
+      };
+      const response = await axios.put(url, updateData);
+      setMessage(response.data);
+    } catch (err) { console.log(err); }
+  };
 
   return (
-    <div style={{ padding: "40px" }}>
-      <div style={card}>
-        <h2 className="text-center mb-4" style={{ fontWeight: 700 }}>
-          Edit Event
-        </h2>
-
-        <form onSubmit={onSubmit}>
-          {/* Title */}
-          <div className="mb-3">
-            <input
-              type="text"
-              className="form-control"
-              style={textInput}
-              name="title"
-              value={form.title}
-              onChange={onChange}
-              placeholder="Event Title"
+    <div style={page}>
+      <div style={cardWrap}>
+        <div style={card}>
+          <h1 style={titlesty}>Edit Event</h1>
+          {message && <p>{message}</p>}
+          <div className="mb-4 text-start">
+            <label className="form-label fw-bold">Select Event to Edit</label>
+            <select
+              className="form-select"
+              value={selectedEventId}
+              onChange={(e) => {
+                setSelectedEventId(e.target.value);
+                loadEventDetails(e.target.value);
+              }}
               required
-            />
+            >
+              <option value="">-- Choose an event --</option>
+              {events.map((ev) => (
+                <option key={ev.eventId} value={ev.eventId}>
+                  {ev.title} — {ev.date}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Description */}
-          <div className="mb-4">
-            <textarea
-              className="form-control"
-              style={textarea}
-              name="description"
-              value={form.description}
-              onChange={onChange}
-              placeholder="Description"
-              required
-            />
-          </div>
-
-          {/* Category – Date – Time */}
-          <div className="row g-3 mb-3">
-            <div className="col-md-4">
-              <select
-                className="form-select"
-                style={selectInput}
-                name="category"
-                value={form.category}
-                onChange={onChange}
-                required
-              >
-                <option value="">Select Category</option>
-                <option value="Workshop">Workshop</option>
-                <option value="Conference">Conference</option>
-                <option value="Meetup">Meetup</option>
-              </select>
-            </div>
-
-            <div className="col-md-4">
-              <input
-                type="date"
-                className="form-control"
-                style={textInput}
-                name="date"
-                value={form.date}
-                onChange={onChange}
-                required
-              />
-            </div>
-
-            {/* Start + End Time */}
-            <div className="col-md-2">
-              <input
-                type="time"
-                className="form-control"
-                style={textInput}
-                name="startTime"
-                value={form.startTime}
-                onChange={onChange}
-                placeholder="Start Time"
-                required
-              />
-            </div>
-
-            <div className="col-md-2">
-              <input
-                type="time"
-                className="form-control"
-                style={textInput}
-                name="endTime"
-                value={form.endTime}
-                onChange={onChange}
-                placeholder="End Time"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Location – Max Participants – Visibility */}
-          <div className="row g-3 mb-3">
-            <div className="col-md-4">
+          <form onSubmit={onSubmit} encType="multipart/form-data">
+            <div className="mb-3 text-start">
               <input
                 type="text"
+                name="name"
+                placeholder="Event Name"
                 className="form-control"
                 style={textInput}
-                name="location"
-                value={form.location}
-                onChange={onChange}
-                placeholder="Location"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </div>
 
-            <div className="col-md-4">
-              <input
-                type="number"
+            <div className="mb-4 text-start">
+              <textarea
+                name="description"
+                placeholder="Description"
                 className="form-control"
-                style={textInput}
-                name="maxParticipants"
-                value={form.maxParticipants}
-                onChange={onChange}
-                placeholder="Max Participants"
+                style={textarea}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 required
               />
             </div>
 
-            <div className="col-md-4 d-flex align-items-center gap-3">
-              <label>
-                <input
-                  type="radio"
-                  name="visibility"
-                  value="public"
-                  checked={form.visibility === "public"}
-                  onChange={onChange}
-                />{" "}
-                Public
-              </label>
+            <div className="row g-3 mb-3 text-start">
+              <div className="col-md-3">
+                <select
+                  name="category"
+                  className="form-select"
+                  style={selectStyle}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  required
+                >
+                  <option value="">Select Category</option>
+                  <option value="Workshop">Workshop</option>
+                  <option value="Conference">Conference</option>
+                  <option value="Meetup">Meetup</option>
+                </select>
+              </div>
 
-              <label>
+              <div className="col-md-3">
                 <input
-                  type="radio"
-                  name="visibility"
-                  value="private"
-                  checked={form.visibility === "private"}
-                  onChange={onChange}
-                />{" "}
-                Private
-              </label>
+                  type="date"
+                  name="date"
+                  className="form-control"
+                  style={textInput}
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="col-md-3">
+                <input
+                  type="time"
+                  name="startTime"
+                  className="form-control"
+                  style={textInput}
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="col-md-3">
+                <input
+                  type="time"
+                  name="endTime"
+                  className="form-control"
+                  style={textInput}
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Photo */}
-          <div className="mb-4" style={{ maxWidth: "250px" }}>
-            <input
-              type="file"
-              className="form-control"
-              style={textInput}
-              name="photo"
-              onChange={onChange}
-              accept="image/*"
-            />
-          </div>
+            <div className="row g-3 mb-3 text-start">
+              <div className="col-md-4">
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Location"
+                  className="form-control"
+                  style={textInput}
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                />
+              </div>
 
-          {/* Buttons */}
-          <div className="d-flex justify-content-end gap-2">
-            <button
-              type="button"
-              style={btnCancel}
-              onClick={goBack}
-            >
-              Cancel
-            </button>
+              <div className="col-md-4">
+                <input
+                  type="number"
+                  name="maxParticipants"
+                  placeholder="Max Participants"
+                  className="form-control"
+                  style={textInput}
+                  value={maxParticipants}
+                  onChange={(e) => setMaxParticipants(e.target.value)}
+                  min="1"
+                  required
+                />
+              </div>
 
-            <button type="submit" style={btnPrimary}>
-              Save Changes
-            </button>
-          </div>
-        </form>
+              <div className="col-md-4">
+                <div style={radioRow}>
+                  <label>
+                    <input
+                      type="radio"
+                      name="visibility"
+                      value="public"
+                      checked={visibility === "public"}
+                      onChange={(e) => setVisibility(e.target.value)}
+                    />{" "}
+                    Public
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="visibility"
+                      value="private"
+                      checked={visibility === "private"}
+                      onChange={(e) => setVisibility(e.target.value)}
+                    />{" "}
+                    Private
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="row g-3 align-items-center text-start">
+              <div className="col-md-4">
+                <input
+                  type="file"
+                  name="photo"
+                  className="form-control"
+                  style={textInput}
+                  onChange={(e) => setImageUrl(e.target.files[0])}
+                  accept="image/*"
+                />
+              </div>
+
+              <div className="col-md-4"></div>
+
+              <div className="col-md-4 d-flex justify-content-end">
+                <button type="submit" style={createBtn} disabled={loading}>
+                  {loading ? "Creating..." : "Create Event"}
+                </button>
+                <button onClick={deleteEvent} style={delBtn} disabled={loading}>
+                  {loading ? "Deleting..." : "Delete Event"}
+                </button>
+
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

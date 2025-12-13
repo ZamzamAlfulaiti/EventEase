@@ -3,8 +3,17 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-export default function Home() {
-  // HERO STYLES
+
+export default function Home({ setSelectedEvent }) {
+  const handleView = (event) => {
+    if (typeof setSelectedEvent === "function") {
+      setSelectedEvent(event);
+    } else {
+      console.error("setSelectedEvent not passed!");
+    }
+  };
+
+  //STYLES
   const hero = {
     backgroundColor: "#2CA39C",
     color: "#ffffff",
@@ -47,7 +56,6 @@ export default function Home() {
     ...heroBtnPrimary,
   };
 
-  // FEATURED SECTION STYLES
   const page = {
     backgroundColor: "#ffffff",
   };
@@ -103,10 +111,11 @@ export default function Home() {
     borderRadius: "4px",
     fontSize: "14px",
   };
+
   let [events, setEvents] = useState([]);
-  const fetchEvents = async () => {
+  const displayEvents = async () => {
     try {
-      let url = "http://localhost:5000/showEvents";
+      let url = "http://localhost:8000/showEvents";
       let res = await axios.get(url);
       setEvents(res.data);
     } catch (error) {
@@ -114,7 +123,7 @@ export default function Home() {
     }
   };
   useEffect(() => {
-    fetchEvents();
+    displayEvents();
   }, []);
   return (
     <div style={page}>
@@ -144,10 +153,10 @@ export default function Home() {
         <h2 style={featuredTitle}>Featured Events</h2>
 
         <div className="row g-4">
-          {events.map((event) => (
+          {events.slice(0, 3).map((event) => (
             <div className="col-md-4" key={event._id}>
               <div style={card}>
-                <div style={imgPlaceholder}></div>
+                <div style={imgPlaceholder}><img src={event.imageUrl} style={{ height: "120px", width: "350px" }} /></div>
                 <div style={cardBody}>
                   <h5 style={cardTitle}>{event.title}</h5>
                   <p style={cardText}>
@@ -159,9 +168,7 @@ export default function Home() {
                   <p style={cardText}>
                     <strong>Category:</strong> {event.category}
                   </p>
-                  <Link to={`/event/${event._id}`} style={viewBtn}>
-                    VIEW DETAILS
-                  </Link>
+                  
                 </div>
               </div>
             </div>

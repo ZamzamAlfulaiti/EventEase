@@ -1,22 +1,23 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateEvent() {
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    category: "",
-    date: "",
-    startTime: "",
-    endTime: "",
-    location: "",
-    maxParticipants: "",
-    visibility: "",
-    photo: null,
-  });
+    const nav = useNavigate();
+    let[eventId, setEventId] = useState();
+    let[message,setMessage]= useState("");
+    let[title,setTitle]= useState("");
+    let[description,setDescription]= useState("");
+    let[category,setCategory]= useState("");
+    let[date,setDate]= useState("");
+    let[startTime,setStartTime]= useState("");
+    let[endTime,setEndTime]= useState("");
+    let[location,setLocation]= useState("");
+    let[maxParticipants,setMaxParticipants]= useState(0);
+    let[visibility,setVisibility]= useState("public");
+    let[imageUrl,setImageUrl]= useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
   const page = { backgroundColor: "#ffffff", padding: "40px 40px 80px" };
   const cardWrap = { maxWidth: "900px", margin: "0 auto" };
@@ -28,7 +29,7 @@ export default function CreateEvent() {
     padding: "32px 40px 36px",
     textAlign: "center",
   };
-  const title = { fontSize: "24px", fontWeight: 700, marginBottom: "24px" };
+  const titlesty = { fontSize: "24px", fontWeight: 700, marginBottom: "24px" };
   const textInput = {
     height: "40px",
     borderRadius: "6px",
@@ -61,67 +62,35 @@ export default function CreateEvent() {
     marginTop: "12px",
   };
 
-  const onChange = (e) => {
-    const { name, value, files, type } = e.target;
-    if (type === "file") {
-      setForm((f) => ({ ...f, [name]: files[0] || null }));
-    } else {
-      setForm((f) => ({ ...f, [name]: value }));
-    }
-  };
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    try {
-      const url = "http://localhost:5000/createEvent";
+    const onSubmit = async(e) => {
+      try{
+        let url = "http://localhost:5000/addEvent";
+        let newEventInfo = {
+          title: title,
+          description: description,
+          category: category,
+          date: date,
+          startTime: startTime,
+          endTime: endTime,
+          location: location,
+          maxParticipants: maxParticipants,
+          visibility: visibility,
+          imageUrl: imageUrl
+        }
+        const serverReply = await axios.post(url,newEventInfo);
+        setMessage(serverReply.data);
+        nav("/login");
+      }catch(err){console.log(err);}
+      
+    };
 
-      const formData = new FormData();
-      formData.append("title", form.name);
-      formData.append("description", form.description);
-      formData.append("category", form.category);
-      formData.append("date", form.date);
-      formData.append("startTime", form.startTime);
-      formData.append("endTime", form.endTime);
-      formData.append("location", form.location);
-      formData.append("maxParticipants", form.maxParticipants);
-      formData.append("visibility", form.visibility);
-      if (form.photo) {
-        formData.append("photo", form.photo);
-      }
-
-      // DO NOT set Content-Type manually — axios/browser will set boundary correctly
-      const response = await axios.post(url, formData);
-
-      setMessage("Event created successfully!");
-      console.log(response.data);
-
-      setForm({
-        name: "",
-        description: "",
-        category: "",
-        date: "",
-        startTime: "",
-        endTime: "",
-        location: "",
-        maxParticipants: "",
-        visibility: "",
-        photo: null,
-      });
-    } catch (error) {
-      console.error(error?.response || error);
-      setMessage("Error creating event. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div style={page}>
       <div style={cardWrap}>
         <div style={card}>
-          <h1 style={title}>Create Event</h1>
+          <h1 style={titlesty}>Create Event</h1>
           {message && <p>{message}</p>}
           <form onSubmit={onSubmit} encType="multipart/form-data">
             <div className="mb-3 text-start">
@@ -131,8 +100,8 @@ export default function CreateEvent() {
                 placeholder="Event Name"
                 className="form-control"
                 style={textInput}
-                value={form.name}
-                onChange={onChange}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 required
               />
             </div>
@@ -143,8 +112,8 @@ export default function CreateEvent() {
                 placeholder="Description"
                 className="form-control"
                 style={textarea}
-                value={form.description}
-                onChange={onChange}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 required
               />
             </div>
@@ -155,8 +124,8 @@ export default function CreateEvent() {
                   name="category"
                   className="form-select"
                   style={selectStyle}
-                  value={form.category}
-                  onChange={onChange}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
                   required
                 >
                   <option value="">Select Category</option>
@@ -172,8 +141,8 @@ export default function CreateEvent() {
                   name="date"
                   className="form-control"
                   style={textInput}
-                  value={form.date}
-                  onChange={onChange}
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
                   required
                 />
               </div>
@@ -184,8 +153,8 @@ export default function CreateEvent() {
                   name="startTime"
                   className="form-control"
                   style={textInput}
-                  value={form.startTime}
-                  onChange={onChange}
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
                   required
                 />
               </div>
@@ -196,8 +165,8 @@ export default function CreateEvent() {
                   name="endTime"
                   className="form-control"
                   style={textInput}
-                  value={form.endTime}
-                  onChange={onChange}
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
                   required
                 />
               </div>
@@ -211,8 +180,8 @@ export default function CreateEvent() {
                   placeholder="Location"
                   className="form-control"
                   style={textInput}
-                  value={form.location}
-                  onChange={onChange}
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
                   required
                 />
               </div>
@@ -224,8 +193,8 @@ export default function CreateEvent() {
                   placeholder="Max Participants"
                   className="form-control"
                   style={textInput}
-                  value={form.maxParticipants}
-                  onChange={onChange}
+                  value={maxParticipants}
+                  onChange={(e) => setMaxParticipants(e.target.value)}
                   min="1"
                   required
                 />
@@ -238,8 +207,8 @@ export default function CreateEvent() {
                       type="radio"
                       name="visibility"
                       value="public"
-                      checked={form.visibility === "public"}
-                      onChange={onChange}
+                      checked={visibility === "public"}
+                      onChange={(e) => setVisibility(e.target.value)}
                     />{" "}
                     Public
                   </label>
@@ -248,8 +217,8 @@ export default function CreateEvent() {
                       type="radio"
                       name="visibility"
                       value="private"
-                      checked={form.visibility === "private"}
-                      onChange={onChange}
+                      checked={visibility === "private"}
+                      onChange={(e) => setVisibility(e.target.value)}
                     />{" "}
                     Private
                   </label>
@@ -264,7 +233,7 @@ export default function CreateEvent() {
                   name="photo"
                   className="form-control"
                   style={textInput}
-                  onChange={onChange}
+                  onChange={(e) => setImageUrl(e.target.files[0])}
                   accept="image/*"
                 />
               </div>

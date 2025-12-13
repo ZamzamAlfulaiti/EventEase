@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
 
 export default function Register() {
   const nav = useNavigate();
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "attendee",
-  });
-
+  let [name, setName] = useState();
+  let [email, setEmail] = useState();
+  let [password, setPassword] = useState();
+  let [confirmPassword, setConfirmPassword] = useState();
+  let [message,setMessage]=useState({});
+//styles
   const page = {
     minHeight: "calc(100vh - 80px)",
     display: "flex",
@@ -79,15 +78,20 @@ export default function Register() {
     marginLeft: "4px",
   };
 
-  const onChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
 
-  const onSubmit = (e) => {
-    e.preventDefault();
-    // demo: just redirect
-    nav("/login");
+  const onSubmit = async(e) => {
+    try{
+      let url = "http://localhost:5000/register";
+      let newUserInfo = {
+        name:name,
+        email:email,
+        password:password,
+      }
+      const serverReply = await axios.post(url,newUserInfo);
+      setMessage(serverReply.data);
+      nav("/login");
+    }catch(err){console.log(err);}
+    
   };
 
   return (
@@ -103,8 +107,8 @@ export default function Register() {
               name="name"
               style={input}
               className="form-control"
-              value={form.name}
-              onChange={onChange}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
@@ -115,8 +119,8 @@ export default function Register() {
               name="email"
               style={input}
               className="form-control"
-              value={form.email}
-              onChange={onChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
@@ -127,8 +131,8 @@ export default function Register() {
               name="password"
               style={input}
               className="form-control"
-              value={form.password}
-              onChange={onChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
@@ -139,36 +143,10 @@ export default function Register() {
               name="confirmPassword"
               style={input}
               className="form-control"
-              value={form.confirmPassword}
-              onChange={onChange}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
-          </div>
-
-          {/* Role radio buttons */}
-          <div style={roleRow}>
-            <label>
-              <input
-                type="radio"
-                name="role"
-                value="attendee"
-                checked={form.role === "attendee"}
-                onChange={onChange}
-                style={{ marginRight: "6px" }}
-              />
-              Attendee
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="role"
-                value="organizer"
-                checked={form.role === "organizer"}
-                onChange={onChange}
-                style={{ marginRight: "6px" }}
-              />
-              Organizer
-            </label>
           </div>
 
           <button type="submit" style={registerBtn}>

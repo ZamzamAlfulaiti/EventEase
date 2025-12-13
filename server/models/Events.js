@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import "../dbconnection.js";
 const eventSchema = new mongoose.Schema({
     organizerId: { type: mongoose.Schema.Types.ObjectId, ref: "users"},
+    eventId:Number,
     title: String,
     description: String,
     category: String,
