@@ -10,12 +10,14 @@ import Register from "./Comps/Register";
 import EvDetailsOrganizer from "./Comps/EvDetailsOrganizer";
 import CreateEvent from "./Comps/CreateEvent";
 import EditEvent from "./Comps/EditEvent";
+import { AuthProvider } from "./AuthContext";
 
 export default function App() {
   const [selectedEvent, setSelectedEvent] = useState(null);
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   return (
     <>
+    <AuthProvider>
       <Router>
         <Routes>
           <Route
@@ -38,7 +40,7 @@ export default function App() {
             path="/login"
             element={
               <Layout>
-                <Login />
+                <Login setIsLoggedIn={setIsLoggedIn} />
               </Layout>
             }
           />
@@ -77,6 +79,7 @@ export default function App() {
           />
         </Routes>
       </Router>
+      </AuthProvider>
     </>
   );
 }

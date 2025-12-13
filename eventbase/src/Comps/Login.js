@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
+import { useContext } from "react";
+import { AuthContext } from "../AuthContext";
 
-export default function Login() {
+export default function Login({ setIsLoggedIn }) {
   const nav = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,11 +67,29 @@ export default function Login() {
     cursor: "pointer",
     marginLeft: "4px",
   };
-
+  const { login } = useContext(AuthContext);
   const onSubmit = (e) => {
     e.preventDefault();
-    nav("/");
+    
+    try {
+      let url = "http://localhost:8000/login";
+      const res = axios.post(url, { email, password });
+      if(res?.data?.user){
+        const user = res.data.user;
+        localStorage.setItem("user", JSON.stringify(user));
+        login(user)
+        setIsLoggedIn(true);
+        nav("/");
+      }else{
+        alert("Invalid Login! Please try again.");
+      }
+    } catch (error) {
+      console.log(error);
+      alert("An error occurred server during login. Please try again.");
+    }
   };
+
+
 
   return (
     <div style={page}>
@@ -106,7 +127,7 @@ export default function Login() {
         </form>
 
         <div style={smallText}>
-          Don’t have an account?
+          Do not have an account?
           <Link to="/register" style={registerLink}>
             Register
           </Link>

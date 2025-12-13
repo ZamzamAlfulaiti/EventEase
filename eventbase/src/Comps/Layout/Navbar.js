@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useContext } from "react";
+import { AuthContext } from "../../AuthContext";
+import axios from "axios";
 
-export default function Navbar() {
+export default function Navbar(){
   const navBar = {
     position: "sticky",
     top: 0,
@@ -74,8 +77,44 @@ export default function Navbar() {
     textDecoration: "none",
     border: "none",
   };
+  const { user, isLoggedIn, logout } = useContext(AuthContext);
+  //logout
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post("http://localhost:8000/logout");
+      logout();
+      isLoggedIn(false);
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+  // show user is logged in
+  if (isLoggedIn){
+    return (
+    <nav style={navBar}>
+      <div style={wrap}>
+        <Link to="/" style={brand}>
+          EventBase
+          </Link>
 
-  return (
+          <div style={centerNav}>
+            <Link to="/" style={navLink}>Home</Link>
+            <Link to="/events" style={navLink}>Events</Link>
+            <Link to="/create-event" style={navLink}>Create Event</Link>
+            <Link to="/edit-event/:id" style={navLink}>Edit Event</Link>
+          </div>
+
+          <div style={rightBox}>
+            <input type="text" placeholder="Search Events..." style={search} />
+          </div>
+          <div>
+            <button onClick={handleLogout} style={loginBtn}>Logout</button>
+          </div>
+        </div>
+      </nav>
+    )
+  }else{
+      return (
     <nav style={navBar}>
       <div style={wrap}>
         <Link to="/" style={brand}>
@@ -96,5 +135,4 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
-  );
-}
+  );}}

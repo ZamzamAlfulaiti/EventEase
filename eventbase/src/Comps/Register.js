@@ -81,7 +81,7 @@ export default function Register() {
 
   const onSubmit = async(e) => {
     try{
-      let url = "http://localhost:5000/register";
+      let url = "http://localhost:8000/register";
       let newUserInfo = {
         name:name,
         email:email,

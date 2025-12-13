@@ -4,20 +4,17 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function CreateEvent() {
-    const nav = useNavigate();
-    let[eventId, setEventId] = useState();
-    let[message,setMessage]= useState("");
-    let[title,setTitle]= useState("");
-    let[description,setDescription]= useState("");
-    let[category,setCategory]= useState("");
-    let[date,setDate]= useState("");
-    let[startTime,setStartTime]= useState("");
-    let[endTime,setEndTime]= useState("");
-    let[location,setLocation]= useState("");
-    let[maxParticipants,setMaxParticipants]= useState(0);
-    let[visibility,setVisibility]= useState("public");
-    let[imageUrl,setImageUrl]= useState("");
-  const [loading, setLoading] = useState(false);
+  const nav = useNavigate();
+  let [message, setMessage] = useState("");
+  let [title, setTitle] = useState("");
+  let [description, setDescription] = useState("");
+  let [category, setCategory] = useState("");
+  let [date, setDate] = useState("");
+  let [startTime, setStartTime] = useState("");
+  let [endTime, setEndTime] = useState("");
+  let [location, setLocation] = useState("");
+  let [maxParticipants, setMaxParticipants] = useState(0);
+  let [visibility, setVisibility] = useState("public");
 
   const page = { backgroundColor: "#ffffff", padding: "40px 40px 80px" };
   const cardWrap = { maxWidth: "900px", margin: "0 auto" };
@@ -63,27 +60,30 @@ export default function CreateEvent() {
   };
 
 
-    const onSubmit = async(e) => {
-      try{
-        let url = "http://localhost:5000/addEvent";
-        let newEventInfo = {
-          title: title,
-          description: description,
-          category: category,
-          date: date,
-          startTime: startTime,
-          endTime: endTime,
-          location: location,
-          maxParticipants: maxParticipants,
-          visibility: visibility,
-          imageUrl: imageUrl
-        }
-        const serverReply = await axios.post(url,newEventInfo);
-        setMessage(serverReply.data);
-        nav("/login");
-      }catch(err){console.log(err);}
-      
-    };
+  const onSubmit = async (e) => {
+    try {
+      let url = "http://localhost:8000/addEvent";
+      const newEvent = {
+        title,
+        description,
+        category,
+        date,
+        startTime,
+        endTime,
+        location,
+        maxParticipants,
+        visibility,
+        imageUrl:null
+      }
+      const serverReply = await axios.post(url, newEvent);
+      setMessage(serverReply.data, "Event created successfully!");
+      nav("/");
+    } catch (err) {
+       console.log(err); 
+      alert("An error occurred server while creating the event. Please try again.");
+    }
+
+  };
 
 
   return (
@@ -92,7 +92,7 @@ export default function CreateEvent() {
         <div style={card}>
           <h1 style={titlesty}>Create Event</h1>
           {message && <p>{message}</p>}
-          <form onSubmit={onSubmit} encType="multipart/form-data">
+          <form encType="multipart/form-data">
             <div className="mb-3 text-start">
               <input
                 type="text"
@@ -227,22 +227,11 @@ export default function CreateEvent() {
             </div>
 
             <div className="row g-3 align-items-center text-start">
-              <div className="col-md-4">
-                <input
-                  type="file"
-                  name="photo"
-                  className="form-control"
-                  style={textInput}
-                  onChange={(e) => setImageUrl(e.target.files[0])}
-                  accept="image/*"
-                />
-              </div>
-
               <div className="col-md-4"></div>
 
               <div className="col-md-4 d-flex justify-content-end">
-                <button type="submit" style={createBtn} disabled={loading}>
-                  {loading ? "Creating..." : "Create Event"}
+                <button type="submit" style={createBtn} onClick={onSubmit}>
+                  Create Event
                 </button>
               </div>
             </div>

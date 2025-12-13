@@ -22,6 +22,17 @@ myserver.get("/showEvents", async(req, res) => {
     }catch(err){console.log(err);}
 });
 
+//show event by eventID
+myserver.get("/ShowEvents/:id", async(req, res) => {
+    try{
+    const eventId = req.params.id;
+    const event = await Events.find({eventId: eventId});
+    if(event)
+        res.send(event);
+    else
+        res.send({message: "Event not found"});
+    }catch(err){console.log(err);}
+});
 //add new event
 myserver.post("/addEvent", async(req, res) => {
     try{
@@ -50,8 +61,8 @@ myserver.delete("/deleteEvent/:id", async(req, res) => {
 myserver.put("/updateEvent/:id", async(req, res) => {
     try{
     const eventId = req.params.id;
-    let updateData = req.body;
-    let result = await Events.findByIdAndUpdate(
+    const updateData = req.body;
+    const result = await Events.findByIdAndUpdate(
         {id: eventId},
         updateData,
         {new: true}
@@ -68,7 +79,7 @@ myserver.put("/updateEvent/:id", async(req, res) => {
 myserver.get("/getEvent/:id", async(req, res) => {
     try{
     const eventId = req.params.id;
-    let event = await Events.findById(eventId);
+    const event = await Events.findById(eventId);
     if((event.data).id)
         res.send(event);
     else
@@ -88,7 +99,7 @@ myserver.post("/register", async(req, res) => {
     }catch(err){console.log(err);}
 });
 
-//user login
+//login
 myserver.post("/login", async(req, res) => {
     try{
     const {email, password} = req.body;
@@ -98,4 +109,28 @@ myserver.post("/login", async(req, res) => {
     else
         res.send({message: "Invalid email or password"});
     }catch(err){console.log(err);}
+});
+
+//show user list
+myserver.get("/users", async(req, res) => {
+    try{
+    const users = await User.find();
+    res.send(users);
+    }catch(err){console.log(err);}
+});
+
+//show user details
+myserver.get("/user/:id", async(req, res) => {
+    try{
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if(user)
+        res.send(user);
+    else
+        res.send({message: "User not found"});
+    }catch(err){console.log(err);}
+});
+//logout
+myserver.post("/logout", (req, res) => {
+    res.send({ message: "Logout successful" });
 });

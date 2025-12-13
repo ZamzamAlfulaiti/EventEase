@@ -115,8 +115,8 @@ export default function Home({ setSelectedEvent }) {
   let [events, setEvents] = useState([]);
   const displayEvents = async () => {
     try {
-      let url = "http://localhost:8000/showEvents";
-      let res = await axios.get(url);
+      const url = "http://localhost:8000/showEvents";
+      const res = await axios.get(url);
       setEvents(res.data);
     } catch (error) {
       console.log(error);

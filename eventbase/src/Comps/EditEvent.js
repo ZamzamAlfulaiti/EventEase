@@ -3,20 +3,20 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 
 export default function EditEvent() {
-  let [eventId, setEventId] = useState();
-  let [message, setMessage] = useState("");
-  let [title, setTitle] = useState("");
-  let [description, setDescription] = useState("");
-  let [category, setCategory] = useState("");
-  let [date, setDate] = useState("");
-  let [startTime, setStartTime] = useState("");
-  let [endTime, setEndTime] = useState("");
-  let [location, setLocation] = useState("");
-  let [maxParticipants, setMaxParticipants] = useState(0);
-  let [visibility, setVisibility] = useState("public");
-  let [imageUrl, setImageUrl] = useState("");
-  let [events, setEvents] = useState([]);
-  let [selectedEvent, setSelectedEvent] = useState("");
+  const [eventId, setEventId] = useState("");
+  const [message, setMessage] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [date, setDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [maxParticipants, setMaxParticipants] = useState("");
+  const [visibility, setVisibility] = useState("public");
+  const [imageUrl, setImageUrl] = useState("");
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState("");
   const [loading, setLoading] = useState(false);
 
   const page = { backgroundColor: "#ffffff", padding: "40px 40px 80px" };
@@ -72,68 +72,101 @@ export default function EditEvent() {
     marginTop: "12px",
   };
 
-  const deleteEvent = async (e) => {
-  try {
-    await axios.delete("http://localhost:8000/deleteEvent/" + eventId);
-    setMessage("Event deleted successfully");
-    fetchEvents();
-    setEventId(null);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
+  // Fetch events list
   const fetchEvents = async () => {
     try {
       const res = await axios.get("http://localhost:8000/showEvents");
-      setEvents(res.data);
+      setEvents(res.data || []);
     } catch (err) {
-      console.log(err);
+      console.error("fetchEvents error:", err);
+      setMessage("Failed to load events.");
     }
   };
+
   useEffect(() => {
     fetchEvents();
   }, []);
 
+  // Load a single event's details by its eventId
   const loadEventDetails = async (id) => {
+    if (!id) return;
     try {
       const res = await axios.get("http://localhost:8000/getEvent/" + id);
       const ev = res.data;
-
-      setEventId(ev.eventId);
-      setTitle(ev.title);
-      setDescription(ev.description);
-      setCategory(ev.category);
-      setDate(ev.date);
-      setStartTime(ev.startTime);
-      setEndTime(ev.endTime);
-      setLocation(ev.location);
-      setMaxParticipants(ev.maxParticipants);
-      setVisibility(ev.visibility);
+      if (!ev || ev.message) {
+        setMessage(ev?.message || "Event not found");
+        return;
+      }
+      setEventId(ev._id);
+      setTitle(ev.title || "");
+      setDescription(ev.description || "");
+      setCategory(ev.category || "");
+      setDate(ev.date ? ev.date.split("T")[0] : "");
+      setStartTime(ev.startTime || "");
+      setEndTime(ev.endTime || "");
+      setLocation(ev.location || "");
+      setMaxParticipants(ev.maxParticipants || "");
+      setVisibility(ev.visibility || "public");
       setImageUrl(ev.imageUrl || "");
     } catch (err) {
-      console.log(err);
+      console.log("loadEventDetails error:", err);
+      setMessage("Failed to load event details.");
     }
   };
 
+  // Submit updates
   const onSubmit = async (e) => {
+    e.preventDefault();
+    if (!eventId) {
+      setMessage("Please select an event first.");
+      return;
+    }
+
     try {
-      let url = "http://localhost:8000/updateEvent/" + eventId;
-      let updateData = {
-        title: title,
-        description: description,
-        category: category,
-        date: date,
-        startTime: startTime,
-        endTime: endTime,
-        location: location,
-        maxParticipants: maxParticipants,
-        visibility: visibility,
-        imageUrl: imageUrl
+      setLoading(true);
+      const url = "http://localhost:8000/updateEvent/" + eventId;
+      const updateData = {
+        title,
+        description,
+        category,
+        date,
+        startTime,
+        endTime,
+        location,
+        maxParticipants: Number(maxParticipants) || 0,
+        visibility,
+        imageUrl: imageUrl || null,
       };
       const response = await axios.put(url, updateData);
-      setMessage(response.data);
-    } catch (err) { console.log(err); }
+      setMessage(response.data?.message || "Event updated successfully");
+      await fetchEvents();
+      await loadEventDetails(eventId);
+    } catch (err) {
+      console.error("Update event error:", err);
+      setMessage("Failed to update event. See console for details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete event
+  const delEvent = async () => {
+    if (!eventId) {
+      setMessage("Please select an event to delete.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const url = "http://localhost:8000/deleteEvent/" + eventId;
+      const res = await axios.delete(url);
+      setMessage(res.data?.message || "Event deleted successfully");
+    } catch (error) {
+      console.log("Delete error:", error);
+      setMessage("Failed to delete event. See console.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -142,27 +175,32 @@ export default function EditEvent() {
         <div style={card}>
           <h1 style={titlesty}>Edit Event</h1>
           {message && <p>{message}</p>}
+
           <div className="mb-4 text-start">
             <label className="form-label fw-bold">Select Event to Edit</label>
             <select
               className="form-select"
-              value={selectedEventId}
+              value={selectedEvent}
               onChange={(e) => {
-                setSelectedEventId(e.target.value);
-                loadEventDetails(e.target.value);
+                const id = e.target.value;
+                setSelectedEvent(id);
+                setEventId(id);
+                loadEventDetails(id);
+                console.log("Selected ID:", id);
               }}
-              required
             >
               <option value="">-- Choose an event --</option>
-              {events.map((ev) => (
-                <option key={ev.eventId} value={ev.eventId}>
-                  {ev.title} — {ev.date}
-                </option>
-              ))}
+              {events
+                .filter(ev => ev && ev._id)
+                .map((ev) => (
+                  <option key={ev._id.toString()} value={ev._id}>
+                    {ev.title || "Untitled Event"} — {ev.date || ""}
+                  </option>
+                ))}
             </select>
           </div>
 
-          <form onSubmit={onSubmit} encType="multipart/form-data">
+          <form onSubmit={onSubmit}>
             <div className="mb-3 text-start">
               <input
                 type="text"
@@ -196,7 +234,6 @@ export default function EditEvent() {
                   style={selectStyle}
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  required
                 >
                   <option value="">Select Category</option>
                   <option value="Workshop">Workshop</option>
@@ -213,31 +250,26 @@ export default function EditEvent() {
                   style={textInput}
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  required
                 />
               </div>
 
               <div className="col-md-3">
                 <input
                   type="time"
-                  name="startTime"
                   className="form-control"
                   style={textInput}
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  required
                 />
               </div>
 
               <div className="col-md-3">
                 <input
                   type="time"
-                  name="endTime"
                   className="form-control"
                   style={textInput}
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  required
                 />
               </div>
             </div>
@@ -246,27 +278,23 @@ export default function EditEvent() {
               <div className="col-md-4">
                 <input
                   type="text"
-                  name="location"
-                  placeholder="Location"
                   className="form-control"
                   style={textInput}
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  required
+                  placeholder="Location"
                 />
               </div>
 
               <div className="col-md-4">
                 <input
                   type="number"
-                  name="maxParticipants"
-                  placeholder="Max Participants"
                   className="form-control"
                   style={textInput}
                   value={maxParticipants}
                   onChange={(e) => setMaxParticipants(e.target.value)}
-                  min="1"
-                  required
+                  placeholder="Max Participants"
+                  min="0"
                 />
               </div>
 
@@ -282,6 +310,7 @@ export default function EditEvent() {
                     />{" "}
                     Public
                   </label>
+
                   <label>
                     <input
                       type="radio"
@@ -297,27 +326,15 @@ export default function EditEvent() {
             </div>
 
             <div className="row g-3 align-items-center text-start">
-              <div className="col-md-4">
-                <input
-                  type="file"
-                  name="photo"
-                  className="form-control"
-                  style={textInput}
-                  onChange={(e) => setImageUrl(e.target.files[0])}
-                  accept="image/*"
-                />
-              </div>
-
               <div className="col-md-4"></div>
 
-              <div className="col-md-4 d-flex justify-content-end">
+              <div className="col-md-4 d-flex justify-content-end gap-2">
                 <button type="submit" style={createBtn} disabled={loading}>
-                  {loading ? "Creating..." : "Create Event"}
+                  {loading ? "Saving..." : "Save Changes"}
                 </button>
-                <button onClick={deleteEvent} style={delBtn} disabled={loading}>
-                  {loading ? "Deleting..." : "Delete Event"}
+                <button type="button" onClick={delEvent} style={delBtn} disabled={loading}>
+                  {loading ? "Working..." : "Delete Event"}
                 </button>
-
               </div>
             </div>
           </form>
